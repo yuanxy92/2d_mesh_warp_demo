@@ -3,12 +3,13 @@
 #include <iostream>
 #include <fstream>
 
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/stitching.hpp>
-
 #include "CPURender.hpp"
+#if CV_MAJOR_VERSION == 2
+#include <opencv2/stitching/stitcher.hpp>
+#define UMat Mat
+#else
+#include <opencv2/stitching.hpp>
+#endif
 
 /**
 * Mesh Warp
@@ -186,7 +187,11 @@ int CPURender::genGraphCutMask(std::vector<cv::Mat> smallImgs, std::vector<cv::P
 		masks[i].copyTo(masksd[i]);
 	}
 	// perform graph cut
+#if CV_MAJOR_VERSION
+	cv::Ptr<cv::detail::SeamFinder> seamfinder = new cv::detail::GraphCutSeamFinder();
+#else
 	cv::Ptr<cv::detail::SeamFinder> seamfinder = cv::makePtr<cv::detail::GraphCutSeamFinder>();
+#endif
 	seamfinder->find(smallImgsd, graphcutCorners, masksd);
 	// bring gpu array back
 	for (int i = 0; i < smallImgs.size(); i++) {
@@ -219,7 +224,7 @@ int CPURender::render() {
          detailImgs[i].rows * graphcutFactor));
 		cv::resize(masks[i], masks[i], cv::Size(detailImgs[i].cols * graphcutFactor,
 			detailImgs[i].rows * graphcutFactor), cv::INTER_NEAREST);
-		graphcutCorners[i] = refpos[i] / scaleFactor * graphcutFactor;
+		graphcutCorners[i] = refpos[i] * (graphcutFactor / scaleFactor);
     }
     genGraphCutMask(smallImgs, graphcutCorners, masks);
     for (int i = 0; i < camNum; i ++) {

@@ -224,6 +224,7 @@ int CPURender::render() {
 	int widthScale = static_cast<int>((refImg.cols + 1) / scaleFactor);
 	int heightScale = static_cast<int>((refImg.rows + 1) / scaleFactor);
 
+
  //   std::vector<cv::Mat> smallImgs(camNum);
  //   std::vector<cv::Point2i> graphcutCorners(camNum);
  //   for (int i = 0; i < camNum; i ++) {

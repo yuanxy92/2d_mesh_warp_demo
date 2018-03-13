@@ -2,13 +2,12 @@
 
 ## How to run
 
-I only test this code on macOS 10.12 + Xcode(Clang) and Visual Studio 2013. Only OpenCV3.2 library is used. I think it can work with OpenCV2 with small modification.
-
+I only test this code on macOS 10.12 + Xcode(Clang) and Visual Studio 2013/2015.Only OpenCV library is needed (I think Linux should be OK, too).
 The main function has two parameters, input data path and ouput result path.
 
 Up to now, only CPU is used. The code contains two parts: warp and render. The render part is very inefficient and only for research purpose. The warp part can be accelerated obviously by gpu.
 
-If you run the code successfully, you can get the result in ./kunshan_render/result .
+Command: GigaStitcher.exe ./kunshan_render/ ./kunshan_render/result
 
 ## Input
 

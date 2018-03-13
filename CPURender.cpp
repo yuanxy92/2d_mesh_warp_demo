@@ -214,32 +214,37 @@ int CPURender::render() {
     for (int i = 0; i < camNum; i ++) {
         masks.push_back(cv::imread(cv::format("%s/%d_mask.png", outputpath.c_str(), i), CV_LOAD_IMAGE_GRAYSCALE));
     }
+	
     // generate mask using graphcut
     float secondFactor = 2;
     float graphcutFactor = scaleFactor * secondFactor;
-    std::vector<cv::Mat> smallImgs(camNum);
-    std::vector<cv::Point2i> graphcutCorners(camNum);
-    for (int i = 0; i < camNum; i ++) {
-        cv::resize(detailImgs[i], smallImgs[i], cv::Size(detailImgs[i].cols * graphcutFactor,
-         detailImgs[i].rows * graphcutFactor));
-		cv::resize(masks[i], masks[i], cv::Size(detailImgs[i].cols * graphcutFactor,
-			detailImgs[i].rows * graphcutFactor), cv::INTER_NEAREST);
-		graphcutCorners[i] = refpos[i] * (graphcutFactor / scaleFactor);
-    }
-    genGraphCutMask(smallImgs, graphcutCorners, masks);
-    for (int i = 0; i < camNum; i ++) {
-		cv::resize(masks[i], masks[i], cv::Size(detailImgs[i].cols, detailImgs[i].rows), cv::INTER_LINEAR);
-        masks[i].convertTo(masks[i], CV_32F);
-    }
-    // generate final result
+	// generate final result
 	int width = detailImgs[0].cols;
 	int height = detailImgs[0].rows;
 	int widthScale = static_cast<int>((refImg.cols + 1) / scaleFactor);
 	int heightScale = static_cast<int>((refImg.rows + 1) / scaleFactor);
+
+ //   std::vector<cv::Mat> smallImgs(camNum);
+ //   std::vector<cv::Point2i> graphcutCorners(camNum);
+ //   for (int i = 0; i < camNum; i ++) {
+ //       cv::resize(detailImgs[i], smallImgs[i], cv::Size(detailImgs[i].cols * graphcutFactor,
+ //        detailImgs[i].rows * graphcutFactor));
+	//	cv::resize(masks[i], masks[i], cv::Size(detailImgs[i].cols * graphcutFactor,
+	//		detailImgs[i].rows * graphcutFactor), cv::INTER_NEAREST);
+	//	graphcutCorners[i] = refpos[i] * (graphcutFactor / scaleFactor);
+ //   }
+ //   genGraphCutMask(smallImgs, graphcutCorners, masks);
+ //   for (int i = 0; i < camNum; i ++) {
+	//	cv::resize(masks[i], masks[i], cv::Size(detailImgs[i].cols, detailImgs[i].rows), cv::INTER_LINEAR);
+ //       masks[i].convertTo(masks[i], CV_32F);
+ //   }
+
+
     // linear blending
 	cv::Mat_<float> weight = cv::Mat_<float>::zeros(heightScale, widthScale);
 	cv::Mat_<cv::Vec3f> imgf = cv::Mat_<cv::Vec3f>::zeros(heightScale, widthScale);
 	for (int i = 0; i < detailImgs.size(); i ++) {
+		masks[i].convertTo(masks[i], CV_32F);
 		cv::Rect rect;
 		rect.width = detailImgs[i].cols;
 		rect.height = detailImgs[i].rows;
@@ -248,6 +253,7 @@ int CPURender::render() {
 		weight(rect) = weight(rect) + masks[i];
 		imgf(rect) = imgf(rect) + applyLinearBlendMask(detailImgs[i], masks[i]);
 	}
+
 	// generate final result
     cv::Mat output;
 	cv::resize(refImg, output, cv::Size(widthScale, heightScale));
